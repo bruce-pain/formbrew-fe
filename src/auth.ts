@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import type { JWT } from "next-auth/jwt";
 
 function decodeJwtExp(token: string): number {
@@ -43,6 +44,7 @@ async function refreshAccessToken(token: JWT): Promise<{
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   providers: [
+    Google({ authorization: { params: { prompt: "select_account" } } }),
     Credentials({
       credentials: {
         email: {},
@@ -81,11 +83,64 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      if (account?.provider === "google") {
+        const idToken =
+          typeof account.id_token === "string" ? account.id_token : "";
+
+        // A Google ID token is always a three-segment JWT whose header
+        // starts with "eyJ". Guard against a missing or malformed value so
+        // the API is never hit with garbage.
+        const segments = idToken.split(".");
+        const looksLikeJwt =
+          idToken.length > 20 &&
+          segments.length === 3 &&
+          segments[0].startsWith("eyJ");
+
+        if (!looksLikeJwt) {
+          throw new Error(
+            `Google exchange skipped: id_token missing or malformed (len=${idToken.length})`,
+          );
+        }
+
+        const exchange = () =>
+          fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/google`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_token: idToken }),
+            },
+          );
+
+        // The backend may be mid-restart during the long Google round-trip;
+        // a single retry covers the transient blip before surfacing an error.
+        let res: Response;
+        try {
+          res = await exchange();
+        } catch {
+          res = await new Promise<Response>((resolve, reject) =>
+            setTimeout(() => exchange().then(resolve, reject), 750),
+          );
+        }
+
+        if (!res.ok) {
+          throw new Error("Google exchange with the API failed");
+        }
+
+        const json = await res.json();
+        token.accessToken = json.access_token;
+        token.refreshToken = json.refresh_token;
+        token.expiresAt = decodeJwtExp(json.access_token);
+        token.id = json.data.id;
+        token.email = json.data.email;
+        return token;
+      }
+
       if (user) {
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
-        token.expiresAt = decodeJwtExp(user.accessToken);
+        token.accessToken = user.accessToken ?? null;
+        token.refreshToken = user.refreshToken ?? null;
+        if (user.accessToken) token.expiresAt = decodeJwtExp(user.accessToken);
         token.id = user.id;
         token.email = user.email;
         return token;
