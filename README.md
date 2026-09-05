@@ -39,6 +39,7 @@ The frontend is a **Next.js 16** (App Router) application written in **TypeScrip
 - **Landing Page**: Marketing site with a live brew demo, feature highlights, how-it-works, showcase, FAQ, and final CTA sections.
 - **Response Analytics**: View aggregate answer summaries per question — including select distributions with counts and percentages — or browse individual responses with prev/next and go-to navigation.
 - **JWT Authentication**: Email/password registration and login with automatic token refresh via next-auth credentials provider; stale sessions are cleaned up and redirected to login.
+- **Google Sign-In**: One-click sign in or sign up with a Google account via the standard OAuth flow; the app exchanges the Google ID token for a Formbrew session automatically.
 - **Dark/Light Theme**: Full theme support via `next-themes` with CSS custom properties and system preference detection.
 
 ---
@@ -187,10 +188,18 @@ Create `.env.local` in the project root:
 
 ```env
 AUTH_SECRET=<generate with: openssl rand -base64 32>
+AUTH_GOOGLE_ID=<Google OAuth client ID>
+AUTH_GOOGLE_SECRET=<Google OAuth client secret>
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
+> `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` enable the "Continue with Google"
+> button on the login and register pages. Create an OAuth 2.0 Web client in
+> the [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+> and add `http://localhost:3000/api/auth/callback/google` to its authorized
+> redirect URIs (use your deployed domain in production).
+>
 > `NEXT_PUBLIC_SITE_URL` is used to build the base URL for social-preview
 > (`og:image`) metadata. In production, set it to your deployed domain (e.g.
 > `https://formbrew.vercel.app`).
