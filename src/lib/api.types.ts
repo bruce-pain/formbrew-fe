@@ -44,6 +44,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign in or sign up with Google
+         * @description Verifies a Google ID token and returns jwt tokens along with user data
+         */
+        post: operations["google_auth_api_v1_auth_google_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/token/refresh": {
         parameters: {
             query?: never;
@@ -78,6 +98,86 @@ export interface paths {
         get: operations["get_user_api_v1_auth_user_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/export/google/tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Connect Google Sheets
+         * @description Exchange the OAuth code for a refresh token and store it for this user
+         */
+        post: operations["connect_google_sheets_api_v1_export_google_tokens_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/export/google/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Google Sheets connection status
+         * @description Checks the database only — no Google network call
+         */
+        get: operations["get_google_export_status_api_v1_export_google_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/export/google/sheets/{form_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export a form's responses to Google Sheets
+         * @description Build rows from the form's responses and create a spreadsheet in the user's Drive
+         */
+        post: operations["export_form_to_google_sheets_api_v1_export_google_sheets__form_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/export/google/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disconnect Google Sheets
+         * @description Forgets the stored token locally (does not revoke it on Google)
+         */
+        post: operations["disconnect_google_sheets_api_v1_export_google_disconnect_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -404,6 +504,70 @@ export interface components {
             /** Is Published */
             is_published?: boolean | null;
         };
+        /** GoogleAuthRequest */
+        GoogleAuthRequest: {
+            /** Id Token */
+            id_token: string;
+        };
+        /** GoogleConnectData */
+        GoogleConnectData: {
+            /** Connected */
+            connected: boolean;
+            /** Google Email */
+            google_email?: string | null;
+        };
+        /** GoogleConnectResponse */
+        GoogleConnectResponse: {
+            /** Status Code */
+            status_code: number;
+            /** Message */
+            message: string;
+            data: components["schemas"]["GoogleConnectData"];
+        };
+        /** GoogleDisconnectResponse */
+        GoogleDisconnectResponse: {
+            /** Status Code */
+            status_code: number;
+            /** Message */
+            message: string;
+        };
+        /** GoogleExportStatus */
+        GoogleExportStatus: {
+            /** Connected */
+            connected: boolean;
+            /** Google Email */
+            google_email?: string | null;
+        };
+        /** GoogleSheetsExportData */
+        GoogleSheetsExportData: {
+            /** Spreadsheet Url */
+            spreadsheet_url: string;
+        };
+        /** GoogleSheetsExportResponse */
+        GoogleSheetsExportResponse: {
+            /** Status Code */
+            status_code: number;
+            /** Message */
+            message: string;
+            data: components["schemas"]["GoogleSheetsExportData"];
+        };
+        /** GoogleStatusResponse */
+        GoogleStatusResponse: {
+            /** Status Code */
+            status_code: number;
+            /** Message */
+            message: string;
+            data: components["schemas"]["GoogleExportStatus"];
+        };
+        /** GoogleTokenExchangeRequest */
+        GoogleTokenExchangeRequest: {
+            /** Code */
+            code: string;
+            /** Code Verifier */
+            code_verifier: string;
+            /** Redirect Uri */
+            redirect_uri: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -644,6 +808,39 @@ export interface operations {
             };
         };
     };
+    google_auth_api_v1_auth_google_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleAuthRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     refresh_tokens_api_v1_auth_token_refresh_post: {
         parameters: {
             query?: never;
@@ -693,6 +890,110 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+        };
+    };
+    connect_google_sheets_api_v1_export_google_tokens_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleTokenExchangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleConnectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_google_export_status_api_v1_export_google_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleStatusResponse"];
+                };
+            };
+        };
+    };
+    export_form_to_google_sheets_api_v1_export_google_sheets__form_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                form_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleSheetsExportResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disconnect_google_sheets_api_v1_export_google_disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleDisconnectResponse"];
                 };
             };
         };
