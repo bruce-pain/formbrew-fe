@@ -9,6 +9,7 @@ export default auth((req) => {
   const isPublicPage =
     pathname === "/" ||
     pathname.startsWith("/forms/public/") ||
+    pathname.startsWith("/export/google/callback") ||
     isMetadataImage;
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/register");
