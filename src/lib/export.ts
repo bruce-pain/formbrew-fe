@@ -8,10 +8,13 @@ type GoogleSheetsExportResponse =
 type GoogleDisconnectResponse =
   components["schemas"]["GoogleDisconnectResponse"];
 
-/** Scopes must match the backend's SCOPES and the Cloud console. */
+/** Scopes must match the backend's SCOPES and the Cloud console.
+ *  Canonical URL forms: Google echoes scopes back canonically and oauthlib
+ *  rejects any difference ("Scope has changed"), so `email` must be spelled
+ *  as userinfo.email. `openid` is already canonical. */
 const SCOPES = [
   "openid",
-  "email",
+  "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/spreadsheets",
   "https://www.googleapis.com/auth/drive.file",
 ];
