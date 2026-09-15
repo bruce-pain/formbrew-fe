@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiFetchBlob } from "@/lib/api";
 import type { components } from "@/lib/api.types";
 
 type GoogleConnectionStatusResponse =
@@ -163,4 +163,61 @@ export async function disconnectGoogleExport(token: string): Promise<void> {
     { method: "POST" },
   );
   void res;
+}
+
+// ----- csv export -----
+
+export interface CsvExportResult {
+  blob: Blob;
+  filename: string;
+}
+
+const FALLBACK_CSV_FILENAME = "form-responses.csv";
+
+/** Derive a download filename from a Content-Disposition header.
+ *  Handles `attachment; filename="foo.csv"`, `filename=foo.csv`, and
+ *  RFC 5987 `filename*=UTF-8''foo.csv`. Falls back to form-responses.csv. */
+export function parseCsvFilename(
+  contentDisposition: string | null,
+): string {
+  if (contentDisposition) {
+    const encoded = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(contentDisposition);
+    if (encoded?.[1]) {
+      try {
+        const decoded = decodeURIComponent(encoded[1].trim().replace(/^"|"$/g, ""));
+        if (decoded) return decoded;
+      } catch {
+        // fall through to the plain filename match
+      }
+    }
+    const plain = /filename\s*=\s*"?([^";]+)"?/i.exec(contentDisposition);
+    const name = plain?.[1]?.trim();
+    if (name) return name;
+  }
+  return FALLBACK_CSV_FILENAME;
+}
+
+/** Download a form's responses as a CSV file (Excel and Sheets compatible).
+ *  Works with zero responses (backend returns a header-only file). */
+export async function exportToCsv(
+  token: string,
+  formId: string,
+): Promise<CsvExportResult> {
+  const { blob, contentDisposition } = await apiFetchBlob(
+    `/api/v1/export/csv/${formId}`,
+    token,
+  );
+  return { blob, filename: parseCsvFilename(contentDisposition) };
+}
+
+/** Trigger a browser download for an in-memory blob. */
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }
