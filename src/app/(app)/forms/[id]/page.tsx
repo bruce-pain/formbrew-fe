@@ -1,8 +1,8 @@
 "use client";
 
-import { Fragment, use, useEffect, useMemo, useState } from "react";
+import { Fragment, Suspense, use, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { ResponseAnswers } from "@/components/ResponseAnswers";
+import { ExportButton } from "@/components/ExportButton";
 import { ShareButton } from "@/components/ShareButton";
 import {
   AlertDialog,
@@ -156,6 +157,28 @@ function SummarySection({
       )}
     </div>
   );
+}
+
+function SheetsOutcomeToast({ formId }: { formId: string }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const done = useRef(false);
+
+  useEffect(() => {
+    if (done.current) return;
+    done.current = true;
+    const outcome = searchParams.get("sheets");
+    if (outcome === "connected") {
+      toast.success("Google Sheets connected");
+    } else if (outcome === "error") {
+      toast.error("Could not connect Google Sheets");
+    }
+    if (outcome) {
+      router.replace(`/forms/${formId}`, { scroll: false });
+    }
+  }, [searchParams, router, formId]);
+
+  return null;
 }
 
 export default function FormDetailPage({
@@ -321,6 +344,9 @@ export default function FormDetailPage({
 
   return (
     <>
+      <Suspense fallback={null}>
+        <SheetsOutcomeToast formId={id} />
+      </Suspense>
       <div className="mb-8">
         <div className="flex items-start gap-3">
           <Button
@@ -355,6 +381,7 @@ export default function FormDetailPage({
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <ShareButton formId={id} variant="default" label="Share" />
+              <ExportButton formId={id} />
               <Button
                 variant="outline"
                 onClick={handleUnpublish}

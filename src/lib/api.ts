@@ -58,6 +58,38 @@ export function apiFetch(path: string, token?: string, init?: RequestInit) {
   });
 }
 
+export interface BlobResult {
+  blob: Blob;
+  contentDisposition: string | null;
+}
+
+/** Like apiFetch, but for non-JSON downloads (e.g. CSV). Returns the blob
+ *  plus the raw Content-Disposition header so callers can derive a filename. */
+export async function apiFetchBlob(
+  path: string,
+  token?: string,
+  init?: RequestInit,
+): Promise<BlobResult> {
+  const headers = new Headers(init?.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const res = await fetch(`${BASE}${path}`, { ...init, headers });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const error = new ApiError(
+      res.status,
+      body.detail || body.message || `Request failed`,
+    );
+    if (error.status === 401 && hasAuthHeader(headers)) {
+      await handleUnauthorized();
+    }
+    throw error;
+  }
+  return {
+    blob: await res.blob(),
+    contentDisposition: res.headers.get("content-disposition"),
+  };
+}
+
 export function publicFetch(path: string, init?: RequestInit) {
   return request(path, init);
 }
