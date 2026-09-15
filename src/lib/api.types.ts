@@ -184,6 +184,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/export/csv/{form_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export form responses as CSV
+         * @description Download the form's responses as a CSV file (Excel and Sheets compatible)
+         */
+        get: operations["export_form_to_csv_api_v1_export_csv__form_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/forms": {
         parameters: {
             query?: never;
@@ -524,19 +544,27 @@ export interface components {
             message: string;
             data: components["schemas"]["GoogleConnectData"];
         };
+        /** GoogleConnectionStatus */
+        GoogleConnectionStatus: {
+            /** Connected */
+            connected: boolean;
+            /** Google Email */
+            google_email?: string | null;
+        };
+        /** GoogleConnectionStatusResponse */
+        GoogleConnectionStatusResponse: {
+            /** Status Code */
+            status_code: number;
+            /** Message */
+            message: string;
+            data: components["schemas"]["GoogleConnectionStatus"];
+        };
         /** GoogleDisconnectResponse */
         GoogleDisconnectResponse: {
             /** Status Code */
             status_code: number;
             /** Message */
             message: string;
-        };
-        /** GoogleExportStatus */
-        GoogleExportStatus: {
-            /** Connected */
-            connected: boolean;
-            /** Google Email */
-            google_email?: string | null;
         };
         /** GoogleSheetsExportData */
         GoogleSheetsExportData: {
@@ -550,14 +578,6 @@ export interface components {
             /** Message */
             message: string;
             data: components["schemas"]["GoogleSheetsExportData"];
-        };
-        /** GoogleStatusResponse */
-        GoogleStatusResponse: {
-            /** Status Code */
-            status_code: number;
-            /** Message */
-            message: string;
-            data: components["schemas"]["GoogleExportStatus"];
         };
         /** GoogleTokenExchangeRequest */
         GoogleTokenExchangeRequest: {
@@ -942,7 +962,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GoogleStatusResponse"];
+                    "application/json": components["schemas"]["GoogleConnectionStatusResponse"];
                 };
             };
         };
@@ -994,6 +1014,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GoogleDisconnectResponse"];
+                };
+            };
+        };
+    };
+    export_form_to_csv_api_v1_export_csv__form_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                form_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

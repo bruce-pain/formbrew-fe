@@ -1,7 +1,8 @@
 import { apiFetch } from "@/lib/api";
 import type { components } from "@/lib/api.types";
 
-type GoogleStatusResponse = components["schemas"]["GoogleStatusResponse"];
+type GoogleConnectionStatusResponse =
+  components["schemas"]["GoogleConnectionStatusResponse"];
 type GoogleConnectResponse = components["schemas"]["GoogleConnectResponse"];
 type GoogleSheetsExportResponse =
   components["schemas"]["GoogleSheetsExportResponse"];
@@ -126,7 +127,7 @@ export function readOAuthHandshake(): OAuthHandshake | null {
 
 export async function getExportStatus(
   token: string,
-): Promise<GoogleStatusResponse> {
+): Promise<GoogleConnectionStatusResponse> {
   return apiFetch("/api/v1/export/google/status", token);
 }
 
