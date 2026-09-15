@@ -80,6 +80,7 @@ AUTH_SECRET=<generate with: openssl rand -base64 32>
 AUTH_GOOGLE_ID=<Google OAuth client ID>
 AUTH_GOOGLE_SECRET=<Google OAuth client secret>
 NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_GOOGLE_SHEETS_CLIENT_ID=<Google OAuth client ID (Sheets export)>
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
@@ -92,6 +93,8 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 > `NEXT_PUBLIC_SITE_URL` is used to build the base URL for social-preview
 > (`og:image`) metadata. In production, set it to your deployed domain (e.g.
 > `https://formbrew.vercel.app`).
+>
+> `NEXT_PUBLIC_GOOGLE_SHEETS_CLIENT_ID` enables Google Sheets export (direct export to Drive/Sheets, currently paused while Google verifies the app). Add `<site>/export/google/callback` to authorized redirect URIs alongside the auth callback.
 
 ### Install & Run
 
