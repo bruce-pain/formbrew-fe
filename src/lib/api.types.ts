@@ -400,6 +400,34 @@ export interface components {
              */
             email: string;
         };
+        /** CheckboxAnswer */
+        CheckboxAnswer: {
+            /** Question Id */
+            question_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            answer_type: "checkbox";
+            /** Selected Options */
+            selected_options?: string[] | null;
+        };
+        /** CheckboxQuestion */
+        CheckboxQuestion: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+            /** Required */
+            required: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            answer_type: "checkbox";
+            /** Options */
+            options: string[];
+        };
         /** FormCreateRequest */
         FormCreateRequest: {
             /** Title */
@@ -407,7 +435,7 @@ export interface components {
             /** Description */
             description: string;
             /** Questions */
-            questions?: components["schemas"]["FormQuestionInput"][] | null;
+            questions?: (components["schemas"]["TextQuestion"] | components["schemas"]["SelectQuestion"] | components["schemas"]["CheckboxQuestion"])[] | null;
             /** Conversation Id */
             conversation_id?: string | null;
         };
@@ -443,45 +471,6 @@ export interface components {
              */
             updated_at: string;
         };
-        /** FormQuestion */
-        FormQuestion: {
-            /** Id */
-            id: string;
-            /** Text */
-            text: string;
-            /**
-             * Answer Type
-             * @enum {string}
-             */
-            answer_type: "text" | "select";
-            /** Answer Select Options */
-            answer_select_options?: string[] | null;
-            /** Answer Select Multiple */
-            answer_select_multiple?: boolean | null;
-            /** Required */
-            required: boolean;
-        };
-        /**
-         * FormQuestionInput
-         * @description Adds extra cross field validation
-         */
-        FormQuestionInput: {
-            /** Id */
-            id: string;
-            /** Text */
-            text: string;
-            /**
-             * Answer Type
-             * @enum {string}
-             */
-            answer_type: "text" | "select";
-            /** Answer Select Options */
-            answer_select_options?: string[] | null;
-            /** Answer Select Multiple */
-            answer_select_multiple?: boolean | null;
-            /** Required */
-            required: boolean;
-        };
         /** FormResponse */
         "FormResponse-Input": {
             /** Title */
@@ -489,12 +478,12 @@ export interface components {
             /** Description */
             description: string | null;
             /** Questions */
-            questions: components["schemas"]["FormQuestionInput"][];
+            questions: (components["schemas"]["TextQuestion"] | components["schemas"]["SelectQuestion"] | components["schemas"]["CheckboxQuestion"])[];
         };
         /** FormResponseCreateRequest */
         FormResponseCreateRequest: {
             /** Answers */
-            answers: components["schemas"]["ResponseAnswerInput"][];
+            answers: (components["schemas"]["TextAnswer"] | components["schemas"]["SelectAnswer"] | components["schemas"]["CheckboxAnswer"])[];
         };
         /** FormResponseListResponse */
         FormResponseListResponse: {
@@ -520,7 +509,7 @@ export interface components {
             /** Description */
             description?: string | null;
             /** Questions */
-            questions?: components["schemas"]["FormQuestionInput"][] | null;
+            questions?: (components["schemas"]["TextQuestion"] | components["schemas"]["SelectQuestion"] | components["schemas"]["CheckboxQuestion"])[] | null;
             /** Is Published */
             is_published?: boolean | null;
         };
@@ -631,36 +620,59 @@ export interface components {
              */
             email: string;
         };
-        /** ResponseAnswer */
-        ResponseAnswer: {
+        /** SelectAnswer */
+        SelectAnswer: {
             /** Question Id */
             question_id: string;
             /**
-             * Answer Type
+             * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            answer_type: "text" | "select";
-            /** Text Answer */
-            text_answer?: string | null;
-            /** Select Answer */
-            select_answer?: string[] | null;
+            answer_type: "select";
+            /** Selected Option */
+            selected_option?: string | null;
         };
-        /**
-         * ResponseAnswerInput
-         * @description Adds cross-field validation
-         */
-        ResponseAnswerInput: {
+        /** SelectQuestion */
+        SelectQuestion: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+            /** Required */
+            required: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            answer_type: "select";
+            /** Options */
+            options: string[];
+        };
+        /** TextAnswer */
+        TextAnswer: {
             /** Question Id */
             question_id: string;
             /**
-             * Answer Type
+             * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            answer_type: "text" | "select";
-            /** Text Answer */
-            text_answer?: string | null;
-            /** Select Answer */
-            select_answer?: string[] | null;
+            answer_type: "text";
+            /** Value */
+            value?: string | null;
+        };
+        /** TextQuestion */
+        TextQuestion: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+            /** Required */
+            required: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            answer_type: "text";
         };
         /** TokenRefreshRequest */
         TokenRefreshRequest: {
@@ -712,7 +724,7 @@ export interface components {
             /** Description */
             description: string;
             /** Questions */
-            questions: components["schemas"]["FormQuestion"][] | null;
+            questions: (components["schemas"]["TextQuestion"] | components["schemas"]["SelectQuestion"] | components["schemas"]["CheckboxQuestion"])[] | null;
             /** Is Published */
             is_published: boolean;
             /** Conversation Id */
@@ -737,14 +749,14 @@ export interface components {
             /** Description */
             description: string | null;
             /** Questions */
-            questions: components["schemas"]["FormQuestionInput"][];
+            questions: (components["schemas"]["TextQuestion"] | components["schemas"]["SelectQuestion"] | components["schemas"]["CheckboxQuestion"])[];
         };
         /** FormResponseData */
         app__features__response__schemas__FormResponseData: {
             /** Id */
             id: string;
             /** Answers */
-            answers: components["schemas"]["ResponseAnswer"][];
+            answers: (components["schemas"]["TextAnswer"] | components["schemas"]["SelectAnswer"] | components["schemas"]["CheckboxAnswer"])[];
             /** Form Id */
             form_id: string;
             /**

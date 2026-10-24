@@ -22,9 +22,9 @@ import { SelectOptionList } from "@/components/SelectOptionList";
 import { Switch } from "@/components/ui/switch";
 import { UnderlineTextarea } from "@/components/ui/underline-input";
 
-import type { components } from "@/lib/api.types";
+import { asChoiceQuestion, asTextQuestion, isChoiceQuestion, type FormQuestion } from "@/lib/form-types";
 
-type FormQuestionInput = components["schemas"]["FormQuestionInput"];
+type FormQuestionInput = FormQuestion;
 
 interface QuestionCardProps {
   active: boolean;
@@ -83,19 +83,11 @@ export function QuestionCard({
 
   function handleAnswerTypeChange(value: string) {
     if (value === "text") {
-      onChange({
-        ...question,
-        answer_type: "text",
-        answer_select_options: null,
-        answer_select_multiple: null,
-      });
-    } else {
-      onChange({
-        ...question,
-        answer_type: "select",
-        answer_select_options: [],
-        answer_select_multiple: false,
-      });
+      onChange(asTextQuestion(question));
+    } else if (value === "select") {
+      onChange(asChoiceQuestion(question, "select"));
+    } else if (value === "checkbox") {
+      onChange(asChoiceQuestion(question, "checkbox"));
     }
   }
 
@@ -144,12 +136,13 @@ export function QuestionCard({
                 value={question.answer_type}
                 onValueChange={handleAnswerTypeChange}
               >
-                <SelectTrigger className="h-7 w-24 text-xs">
+                <SelectTrigger className="h-7 w-32 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="text">Text</SelectItem>
-                  <SelectItem value="select">Select</SelectItem>
+                  <SelectItem value="select">Single choice</SelectItem>
+                  <SelectItem value="checkbox">Multiple choice</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -162,26 +155,13 @@ export function QuestionCard({
               />
               Required
             </Label>
-
-            {question.answer_type === "select" && (
-              <Label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Switch
-                  checked={question.answer_select_multiple ?? false}
-                  onCheckedChange={(v) =>
-                    onChange({ ...question, answer_select_multiple: v })
-                  }
-                  size="sm"
-                />
-                Allow multiple
-              </Label>
-            )}
           </div>
 
-          {question.answer_type === "select" && (
+          {isChoiceQuestion(question) && (
             <SelectOptionList
-              options={question.answer_select_options ?? []}
+              options={question.options ?? []}
               onChange={(opts) =>
-                onChange({ ...question, answer_select_options: opts })
+                onChange({ ...question, options: opts } as FormQuestionInput)
               }
             />
           )}
@@ -229,12 +209,12 @@ export function QuestionCard({
         </div>
       ) : (
         <div className="space-y-1.5">
-          {(question.answer_select_options ?? []).length > 0 ? (
-            (question.answer_select_options ?? []).map((option) => (
+          {isChoiceQuestion(question) && question.options.length > 0 ? (
+            question.options.map((option) => (
               <div key={option} className="flex items-center gap-2">
                 <div
                   className={`shrink-0 border border-muted-foreground/30 ${
-                    question.answer_select_multiple
+                    question.answer_type === "checkbox"
                       ? "size-4 rounded-sm"
                       : "size-4 rounded-full"
                   }`}

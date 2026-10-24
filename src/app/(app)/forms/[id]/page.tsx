@@ -46,11 +46,10 @@ import { getFormResponses } from "@/lib/response";
 import { formatDate } from "@/lib/utils";
 
 import type { components } from "@/lib/api.types";
+import { type FormQuestion, type ResponseAnswer } from "@/lib/form-types";
 
-type FormQuestion = components["schemas"]["FormQuestion"];
 type FormResponseData =
   components["schemas"]["app__features__response__schemas__FormResponseData"];
-type ResponseAnswer = components["schemas"]["ResponseAnswer"];
 
 type SummarySection =
   | { question: FormQuestion; values: string[] }
@@ -112,7 +111,7 @@ function SummarySection({
   }
 
   const { entries, maxCount, total } = section;
-  const unit = question.answer_select_multiple === true ? "selection" : "response";
+      const unit = question.answer_type === "checkbox" ? "selection" : "response";
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4">
@@ -255,15 +254,23 @@ export default function FormDetailPage({
 
       if (q.answer_type === "text") {
         const values = questionAnswers
-          .map((a) => a.text_answer?.trim() ?? "")
+          .map((a) => (a.answer_type === "text" ? a.value?.trim() ?? "" : ""))
           .filter((v) => v.length > 0);
         return { question: q, values };
       }
 
       const counts = new Map<string, number>();
       for (const a of questionAnswers) {
-        for (const value of a.select_answer ?? []) {
-          counts.set(value, (counts.get(value) ?? 0) + 1);
+        if (a.answer_type === "select") {
+          if (a.selected_option) {
+            counts.set(a.selected_option, (counts.get(a.selected_option) ?? 0) + 1);
+          }
+        } else if (a.answer_type === "checkbox") {
+          for (const value of a.selected_options ?? []) {
+            if (value) {
+              counts.set(value, (counts.get(value) ?? 0) + 1);
+            }
+          }
         }
       }
       const entries = [...counts.entries()]

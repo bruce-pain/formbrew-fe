@@ -7,9 +7,9 @@ import { FormQuestionCard } from "@/components/FormQuestionCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import type { components } from "@/lib/api.types";
+import type { FormQuestion } from "@/lib/form-types";
 
-type FormQuestionInput = components["schemas"]["FormQuestionInput"];
+type FormQuestionInput = FormQuestion;
 
 interface FormPreviewProps {
   title: string;

@@ -1,6 +1,7 @@
-import type { components } from "@/lib/api.types";
+import type { FormQuestion } from "./form-types";
+import { isChoiceQuestion } from "./form-types";
 
-type FormQuestionInput = components["schemas"]["FormQuestionInput"];
+type FormQuestionInput = FormQuestion;
 
 export interface FormSnapshot {
   title: string;
@@ -30,14 +31,8 @@ function diffQuestion(before: FormQuestionInput, after: FormQuestionInput): stri
     );
   }
 
-  if (before.answer_select_multiple !== after.answer_select_multiple) {
-    edits.push(
-      `[User ${after.answer_select_multiple ? "allowed" : "disallowed"} multiple selections for "${label}"]`,
-    );
-  }
-
-  const beforeOpts = before.answer_select_options ?? [];
-  const afterOpts = after.answer_select_options ?? [];
+  const beforeOpts = isChoiceQuestion(before) ? before.options : [];
+  const afterOpts = isChoiceQuestion(after) ? after.options : [];
 
   for (const opt of afterOpts) {
     if (!beforeOpts.includes(opt)) {

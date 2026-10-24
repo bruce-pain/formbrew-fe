@@ -1,37 +1,30 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-
-import type { components } from "@/lib/api.types";
-
-type FormQuestion = components["schemas"]["FormQuestion"];
-type ResponseAnswer = components["schemas"]["ResponseAnswer"];
+import type { FormQuestion, ResponseAnswer } from "@/lib/form-types";
 
 function Answer({
-  question,
   answer,
 }: {
-  question: FormQuestion;
   answer?: ResponseAnswer;
 }) {
   if (!answer) {
     return <p className="text-muted-foreground">(no answer)</p>;
   }
 
-  if (question.answer_type === "text") {
-    const value = answer.text_answer?.trim();
+  if (answer.answer_type === "text") {
+    const value = answer.value?.trim();
     if (!value) {
       return <p className="text-muted-foreground">(no answer)</p>;
     }
     return <p className="whitespace-pre-wrap">{value}</p>;
   }
 
-  const values = answer.select_answer ?? [];
-  if (values.length === 0) {
-    return <p className="text-muted-foreground">(no answer)</p>;
-  }
-
-  if (question.answer_select_multiple) {
+  if (answer.answer_type === "checkbox") {
+    const values = answer.selected_options ?? [];
+    if (values.length === 0) {
+      return <p className="text-muted-foreground">(no answer)</p>;
+    }
     return (
       <div className="flex flex-wrap gap-1.5">
         {values.map((value) => (
@@ -43,7 +36,15 @@ function Answer({
     );
   }
 
-  return <p>{values[0]}</p>;
+  if (answer.answer_type === "select") {
+    const value = answer.selected_option ?? "";
+    if (!value) {
+      return <p className="text-muted-foreground">(no answer)</p>;
+    }
+    return <p>{value}</p>;
+  }
+
+  return <p className="text-muted-foreground">(no answer)</p>;
 }
 
 export function ResponseAnswers({
@@ -66,7 +67,7 @@ export function ResponseAnswers({
             {question.text}
           </p>
           <div className="mt-1.5">
-            <Answer question={question} answer={answerByQuestion.get(question.id)} />
+            <Answer answer={answerByQuestion.get(question.id)} />
           </div>
         </div>
       ))}

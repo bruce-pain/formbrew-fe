@@ -7,9 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-import type { components } from "@/lib/api.types";
-
-type FormQuestion = components["schemas"]["FormQuestion"];
+import type { FormQuestion } from "@/lib/form-types";
 
 const SAMPLE_FORM: { title: string; description: string; questions: FormQuestion[] } = {
   title: "Café Feedback",
@@ -19,24 +17,20 @@ const SAMPLE_FORM: { title: string; description: string; questions: FormQuestion
       id: "q1",
       text: "How did you hear about us?",
       answer_type: "select",
-      answer_select_options: ["Social media", "A friend", "Walked past", "Online search"],
-      answer_select_multiple: false,
+      options: ["Social media", "A friend", "Walked past", "Online search"],
       required: true,
     },
     {
       id: "q2",
       text: "What did you order?",
-      answer_type: "select",
-      answer_select_options: ["Espresso", "Latte", "Filter", "Pastry"],
-      answer_select_multiple: true,
+      answer_type: "checkbox",
+      options: ["Espresso", "Latte", "Filter", "Pastry"],
       required: false,
     },
     {
       id: "q3",
       text: "Anything we could do better?",
       answer_type: "text",
-      answer_select_options: null,
-      answer_select_multiple: null,
       required: false,
     },
   ],
