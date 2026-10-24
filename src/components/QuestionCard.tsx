@@ -140,9 +140,9 @@ export function QuestionCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="text">Text</SelectItem>
-                  <SelectItem value="select">Single choice</SelectItem>
-                  <SelectItem value="checkbox">Multiple choice</SelectItem>
+                <SelectItem value="text">Text</SelectItem>
+                <SelectItem value="select">Multiple choice</SelectItem>
+                <SelectItem value="checkbox">Checkboxes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
