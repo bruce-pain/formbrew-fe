@@ -52,9 +52,9 @@ import {
   updateForm,
 } from "@/lib/form";
 
-import type { components } from "@/lib/api.types";
+import { blankQuestion, type FormQuestion } from "@/lib/form-types";
 
-type FormQuestionInput = components["schemas"]["FormQuestionInput"];
+type FormQuestionInput = FormQuestion;
 
 interface FormEditorProps {
   token: string;
@@ -76,34 +76,32 @@ export function FormEditor({ token, formId: initialFormId }: FormEditorProps) {
 
   function createBlankQuestion(): FormQuestionInput {
     idCounter.current += 1;
-    return {
-      id: `q${idCounter.current}`,
-      text: "",
-      answer_type: "text",
-      answer_select_options: null,
-      answer_select_multiple: null,
-      required: false,
-    };
+    return blankQuestion(`q${idCounter.current}`);
+  }
+
+  function textProblem(q: FormQuestionInput): string | null {
+    if (q.text.trim().length > 0) return null;
+    const idx = questions.findIndex((item) => item.id === q.id);
+    return `Question ${idx + 1} needs question text`;
+  }
+
+  function optionProblem(q: FormQuestionInput): string | null {
+    if (q.answer_type === "text") return null;
+    if ("options" in q && Array.isArray((q as any).options) && (q as any).options.length > 0) {
+      return null;
+    }
+    const idx = questions.findIndex((item) => item.id === q.id);
+    return `Question ${idx + 1} needs at least one option`;
   }
 
   function hasMinimumContent(): boolean {
-    return (
-      title.trim().length > 0 &&
-      questions.some((q) => q.text.trim().length > 0)
-    );
+    return title.trim().length > 0 && questions.some((q) => q.text.trim().length > 0);
   }
 
   const [title, setTitle] = useState("Untitled Form");
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState<FormQuestionInput[]>([
-    {
-      id: "q1",
-      text: "",
-      answer_type: "text",
-      answer_select_options: null,
-      answer_select_multiple: null,
-      required: false,
-    },
+    blankQuestion("q1"),
   ]);
   const [activeCardId, setActiveCardId] = useState<string>(TITLE_CARD_ID);
   const [mode, setMode] = useState<"edit" | "preview">("edit");
@@ -287,7 +285,12 @@ export function FormEditor({ token, formId: initialFormId }: FormEditorProps) {
       const res = await generateQuestions(token, fullPrompt, conversationId, {
         title: title || null,
         description: description || null,
-        questions: questions.filter((q) => q.text.trim()),
+        questions: questions.filter(
+          (q) =>
+            q.text.trim() &&
+            (q.answer_type === "text" ||
+              ("options" in q && Array.isArray(q.options) && q.options.length > 0)),
+        ),
       });
 
       const generatedQuestions = res.data.questions;
@@ -373,9 +376,24 @@ export function FormEditor({ token, formId: initialFormId }: FormEditorProps) {
 
   async function handleSave() {
     if (saving || publishing || aiGenerating) return;
-    if (!hasMinimumContent()) {
-      toast.error("Add a title and at least one question before saving.");
+    if (!title.trim()) {
+      toast.error("Add a title before saving");
+      setActiveCardId(TITLE_CARD_ID);
       return;
+    }
+    for (const q of questions) {
+      const tp = textProblem(q);
+      if (tp) {
+        toast.error(tp);
+        setActiveCardId(q.id);
+        return;
+      }
+      const op = optionProblem(q);
+      if (op) {
+        toast.error(op);
+        setActiveCardId(q.id);
+        return;
+      }
     }
     setSaving(true);
     setSaveStatus("saving");
@@ -410,9 +428,24 @@ export function FormEditor({ token, formId: initialFormId }: FormEditorProps) {
 
   async function handlePublish() {
     if (saving || publishing || aiGenerating) return;
-    if (!hasMinimumContent()) {
-      toast.error("Add a title and at least one question before publishing.");
+    if (!title.trim()) {
+      toast.error("Add a title before publishing");
+      setActiveCardId(TITLE_CARD_ID);
       return;
+    }
+    for (const q of questions) {
+      const tp = textProblem(q);
+      if (tp) {
+        toast.error(tp);
+        setActiveCardId(q.id);
+        return;
+      }
+      const op = optionProblem(q);
+      if (op) {
+        toast.error(op);
+        setActiveCardId(q.id);
+        return;
+      }
     }
     setPublishing(true);
     try {

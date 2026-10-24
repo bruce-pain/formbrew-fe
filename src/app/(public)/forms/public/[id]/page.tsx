@@ -12,10 +12,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ApiError } from "@/lib/api";
 import { getPublicForm, submitFormResponse } from "@/lib/public-form";
 
+import type { FormQuestion } from "@/lib/form-types";
 import type { components } from "@/lib/api.types";
 
-type FormQuestion = components["schemas"]["FormQuestion"];
-type ResponseAnswerInput = components["schemas"]["ResponseAnswerInput"];
+type ResponseAnswerInput = components["schemas"]["app__features__response__schemas__FormResponseData"]["answers"][number];
 
 interface FormData {
   title: string;
@@ -90,12 +90,14 @@ export default function PublicFormPage({
     for (const question of form.questions) {
       if (!question.required) continue;
       const value = answers[question.id];
-      const isEmpty =
-        question.answer_type === "text"
-          ? typeof value !== "string" || value.trim().length === 0
-          : question.answer_select_multiple
-            ? !Array.isArray(value) || value.length === 0
-            : typeof value !== "string" || value.length === 0;
+      let isEmpty = false;
+      if (question.answer_type === "text") {
+        isEmpty = typeof value !== "string" || value.trim().length === 0;
+      } else if (question.answer_type === "select") {
+        isEmpty = typeof value !== "string" || value.length === 0;
+      } else if (question.answer_type === "checkbox") {
+        isEmpty = !Array.isArray(value) || value.length === 0;
+      }
 
       if (isEmpty) {
         nextErrors[question.id] = "This question is required";
@@ -130,22 +132,35 @@ export default function PublicFormPage({
         result.push({
           question_id: question.id,
           answer_type: "text",
-          text_answer: text,
-        });
+          value: text,
+        } as ResponseAnswerInput);
         continue;
       }
 
-      const selected = Array.isArray(value)
-        ? value
-        : typeof value === "string" && value
-          ? [value]
+      if (question.answer_type === "select") {
+        const selected =
+          typeof value === "string" && value.trim() ? value.trim() : null;
+        if (!selected) continue;
+        result.push({
+          question_id: question.id,
+          answer_type: "select",
+          selected_option: selected,
+        } as ResponseAnswerInput);
+        continue;
+      }
+
+      if (question.answer_type === "checkbox") {
+        const selected = Array.isArray(value)
+          ? value.filter((v) => typeof v === "string" && v.trim())
           : [];
-      if (selected.length === 0) continue;
-      result.push({
-        question_id: question.id,
-        answer_type: "select",
-        select_answer: selected,
-      });
+        if (selected.length === 0) continue;
+        result.push({
+          question_id: question.id,
+          answer_type: "checkbox",
+          selected_options: selected,
+        } as ResponseAnswerInput);
+        continue;
+      }
     }
 
     return result;

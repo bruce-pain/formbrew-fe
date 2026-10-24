@@ -21,9 +21,9 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuestionCard } from "@/components/QuestionCard";
 
-import type { components } from "@/lib/api.types";
+import type { FormQuestion } from "@/lib/form-types";
 
-type FormQuestionInput = components["schemas"]["FormQuestionInput"];
+type FormQuestionInput = FormQuestion;
 
 interface QuestionListProps {
   questions: FormQuestionInput[];

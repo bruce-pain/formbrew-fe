@@ -13,9 +13,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UnderlineTextarea } from "@/components/ui/underline-input";
 
-import type { components } from "@/lib/api.types";
-
-type FormQuestion = components["schemas"]["FormQuestion"];
+import { isChoiceQuestion, type FormQuestion } from "@/lib/form-types";
 
 interface FormQuestionCardProps {
   question: FormQuestion;
@@ -51,7 +49,7 @@ export function FormQuestionCard({
   onChange,
 }: FormQuestionCardProps) {
   const invalid = Boolean(error);
-  const options = question.answer_select_options ?? [];
+  const options = isChoiceQuestion(question) ? question.options : [];
   const id = `question-${question.id}`;
 
   return (
@@ -71,7 +69,7 @@ export function FormQuestionCard({
             />
             {error && <FieldError>{error}</FieldError>}
           </Field>
-        ) : question.answer_select_multiple ? (
+        ) : question.answer_type === "checkbox" ? (
           <FieldSet className="gap-3">
             <FieldLegend
               variant="label"
