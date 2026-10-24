@@ -87,7 +87,7 @@ export function FormEditor({ token, formId: initialFormId }: FormEditorProps) {
 
   function optionProblem(q: FormQuestionInput): string | null {
     if (q.answer_type === "text") return null;
-    if ("options" in q && Array.isArray(q.options) && q.options.length > 0) {
+    if ("options" in q && Array.isArray((q as any).options) && (q as any).options.length > 0) {
       return null;
     }
     const idx = questions.findIndex((item) => item.id === q.id);
@@ -376,9 +376,24 @@ export function FormEditor({ token, formId: initialFormId }: FormEditorProps) {
 
   async function handleSave() {
     if (saving || publishing || aiGenerating) return;
-    if (!hasMinimumContent()) {
-      toast.error("Add a title and at least one question before saving.");
+    if (!title.trim()) {
+      toast.error("Add a title before saving");
+      setActiveCardId(TITLE_CARD_ID);
       return;
+    }
+    for (const q of questions) {
+      const tp = textProblem(q);
+      if (tp) {
+        toast.error(tp);
+        setActiveCardId(q.id);
+        return;
+      }
+      const op = optionProblem(q);
+      if (op) {
+        toast.error(op);
+        setActiveCardId(q.id);
+        return;
+      }
     }
     setSaving(true);
     setSaveStatus("saving");
@@ -413,9 +428,24 @@ export function FormEditor({ token, formId: initialFormId }: FormEditorProps) {
 
   async function handlePublish() {
     if (saving || publishing || aiGenerating) return;
-    if (!hasMinimumContent()) {
-      toast.error("Add a title and at least one question before publishing.");
+    if (!title.trim()) {
+      toast.error("Add a title before publishing");
+      setActiveCardId(TITLE_CARD_ID);
       return;
+    }
+    for (const q of questions) {
+      const tp = textProblem(q);
+      if (tp) {
+        toast.error(tp);
+        setActiveCardId(q.id);
+        return;
+      }
+      const op = optionProblem(q);
+      if (op) {
+        toast.error(op);
+        setActiveCardId(q.id);
+        return;
+      }
     }
     setPublishing(true);
     try {
